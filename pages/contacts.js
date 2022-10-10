@@ -1,7 +1,73 @@
 import Image from 'next/image'
 import Footer from './components/footer';
 import Header from './components/header';
- function Contacts() {
+const nodemailer = require("nodemailer");
+ async function Contacts() {
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [subjectt, setSubject] = useState('');
+    const [message, setMessage] = useState('');
+ 
+    function onChangeUsername(e) {
+        setUsername(e.target.value);
+        console.log(username)
+    }
+    function onChangeEmail(e) {
+        setEmail(e.target.value);
+        console.log(e.target.value)
+    }
+    function onChangeSubject(e) {
+        setSubject(e.target.value);
+        console.log(e.target.value)
+    }
+    function onChangeMessage(e) {
+        setMessage(e.target.value)
+        console.log(location)
+    }
+ 
+    function onSubmit(e) {
+        e.preventDefault()
+        localStorage.setItem('username', username);
+        localStorage.setItem('email', email);
+        localStorage.setItem('subjectt', subjectt);
+        localStorage.setItem('message', message);
+    }
+
+    // async..await is not allowed in global scope, must use a wrappe
+      // Generate test SMTP service account from ethereal.email
+      // Only needed if you don't have a real mail account for testing
+      let testAccount = await nodemailer.createTestAccount();
+    
+      // create reusable transporter object using the default SMTP transport
+      let transporter = nodemailer.createTransport({
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false, // true for 465, false for other ports
+        auth: {
+          user: testAccount.user, // generated ethereal user
+          pass: testAccount.pass, // generated ethereal password
+        },
+      });
+    
+      // send mail with defined transport object
+      let info = await transporter.sendMail({
+        from: '"Fred Foo 👻" <foo@example.com>', // sender address
+        to: email, // list of receivers
+        subject: subjectt, // Subject line
+        text: message, // plain text body
+        //html: "<b>Hello world?</b>", // html body
+      });
+    
+      console.log("Message sent: %s", info.messageId);
+      // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+    
+      // Preview only available when sending through an Ethereal account
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+      // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+    
+    
+    
+
     return (
         <>
         <Header/>
@@ -60,21 +126,57 @@ import Header from './components/header';
                     <form action="message.php" method="POST">
                         <div className="fields">
                             <div className="field name">
-                                <input type="text" name="name" placeholder="Name" autoComplete="off" required/>
+                                <input 
+                                type="text"
+                                //name="username"
+                                value={username}
+                                onChange={onChangeUsername}
+                                placeholder="Name" 
+                                autoComplete="off" 
+                                required
+                                />
+                                
                             </div>
                             <div className="field email">
-                                <input type="email" name="email" placeholder="Email" autoComplete="off" required/>
+                                <input 
+                                type="text"
+                                //name="username"
+                                value={email}
+                                onChange={onChangeEmail}
+                                placeholder="Email" 
+                                autoComplete="off" 
+                                required/>
                             </div>
 
                         </div>
                         <div className="field Project">
-                            <input type="text" name="subject" placeholder="Subject" autoComplete="off" required/>
+                            <input 
+                            type="text"
+                            //name="username"
+                            value={subjectt}
+                            onChange={onChangeSubject}
+                            placeholder="Subject" 
+                            autoComplete="off" 
+                            required/>
                         </div>
                         <div className="field textarea">
-                            <textarea cols="30" rows="10" name="message" placeholder="Message.." required></textarea>
+                            <textarea 
+                            cols="30" 
+                            rows="10" 
+                            value={message}
+                            name="message" 
+                            type="text"
+                            onChange={onChangeMessage}
+                            placeholder="user name"
+                            required></textarea>
                         </div>
                         <div className="button">
-                            <button type="submit">SUBMIT</button>
+                            <button 
+                            type="submit"
+                            onClick={() => {
+                               info(); /////
+                            }}
+                            >SUBMIT</button>
                         </div>
                     </form>
                 </div>
@@ -98,3 +200,5 @@ import Header from './components/header';
   }
   
   export default Contacts
+
+  Contacts().catch(console.error);

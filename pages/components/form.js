@@ -1,9 +1,19 @@
 import React, { useState, useEffect } from "react";
 import Link from 'next/link'
-import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
- 
- 
+import shortid from 'shortid';
+const PesaPal = require('pesapal-node');
+//import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
+
  function FormC4C()  {
+
+    
+    let pesapal = new PesaPal({
+        sitename: 'C4HK Donations',
+        key: "s9wWRUjVSuzqvZIoVDzxOsjgNdmWwoAR", // TODO: Use your own credentials!!
+        secret: "fe9iGVCH8YkJGL9G5V1epBh7zrQ=",
+        debug: true // false in production!
+    });
+
  
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
@@ -41,25 +51,51 @@ import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
         localStorage.setItem('amount', amount);
     }
 
-    const config = {
-        public_key: process.env.NEXT_PUBLIC_PUBLIC_KEY,
-        tx_ref: Date.now(),
-        amount: amount,
-        currency: location,
-        payment_options: 'card,mobilemoney',
-        customer: {
-          email: email,
-          phonenumber: phonenumber,
-          name: username,
-        },
-        customizations: {
-          title: 'CHFAK Donations',
-          description: 'By donating to us, you provide shelter and education to our children.',
-          logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
-        },
-      };
+    let customer = pesapal.customerDetail({
+        fistname: username,
+        lastname: 'c4hk',
+        email: email,
+        phonenumber: phonenumber,
+    });
 
-      const handleFlutterPayment = useFlutterwave(config);
+    let order = pesapal.orderDetail({
+        itemID: shortid.generate(),
+        particulars: 'Donations for C4HK',
+        quatity: '1',
+        unitCost: amount,
+        details: '<information about the order>'
+    });
+    let orders = [];
+    orders.push(order);
+    let postOrderUrl = pesapal.sendPostPesaPalDirectOrder({
+        reference: shortid.generate(),
+        customerDetails: customer,
+        description:'Donations for C4HK',
+        orders: orders
+    }); 
+var url = PesaPal.getPaymentURL(order, "http://mysite.co.ke/callback");
+// send it to an iframe ?
+
+
+    // const config = {
+    //     public_key: process.env.NEXT_PUBLIC_PUBLIC_KEY,
+    //     tx_ref: Date.now(),
+    //     amount: amount,
+    //     currency: location,
+    //     payment_options: 'card,mobilemoney',
+    //     customer: {
+    //       email: email,
+    //       phonenumber: phonenumber,
+    //       name: username,
+    //     },
+    //     customizations: {
+    //       title: 'CHFAK Donations',
+    //       description: 'By donating to us, you provide shelter and education to our children.',
+    //       logo: 'https://st2.depositphotos.com/4403291/7418/v/450/depositphotos_74189661-stock-illustration-online-shop-log.jpg',
+    //     },
+    //   };
+
+    //   const handleFlutterPayment = useFlutterwave(config);
  
     // function getData() {
     //    // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -158,14 +194,15 @@ import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
                     type="submit"
                     style={{color: '#fff'}}
                             onClick={() => {
-                            handleFlutterPayment({
-                                callback: (response) => {
-                                console.log(response);
+                                postOrderUrl();
+                            // handleFlutterPayment({
+                            //     callback: (response) => {
+                            //     console.log(response);
                                 
-                                    closePaymentModal() // this will close the modal programmatically
-                                },
-                                onClose: () => {},
-                            });
+                            //         closePaymentModal() // this will close the modal programmatically
+                            //     },
+                            //     onClose: () => {},
+                            // });
                             }}
                         >
                             Donate

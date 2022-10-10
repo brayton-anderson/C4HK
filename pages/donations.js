@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import FormC4C from "./components/form";
+import FormC4C from "./components/form.js";
 
  
 export default function Donations() {
